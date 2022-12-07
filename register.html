@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #F9F9F9;
+        }
+        .register-box {
+            width: 300px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgb(9, 122, 85);
+        }
+        .register-box h1 {
+            float: left;
+            font-size: 50px;
+            
+            margin-bottom: 20px;
+            padding: 13px 0;
+        }
+        .textbox {
+            width: 100%;
+            overflow: hidden;
+            font-size: 20px;
+            padding: 8px 0;
+            margin: 8px 0;
+            border-bottom: 1px solid #4caf50;
+        }
+        .textbox input {
+            border: none;
+            outline: none;
+            background: none;
+            color: rgb(14, 0, 0);
+            font-size: 18px;
+            width: 80%;
+            float: left;
+            margin: 0 10px;
+        }
+        .btn {
+            width: 100%;
+            background: none;
+            border: 2px solid #4caf50;
+            color: #4caf50;
+            padding: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 12px 0;
+        }
+        .signin {
+            text-align: center;
+            margin-top: 20px;
+            color: rgb(122, 228, 210);
+        }
+        .signin a {
+            text-decoration: none;
+            color: #4caf50;
+            font-size: 16px;
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus,
+        select:-webkit-autofill,
+        select:-webkit-autofill:hover,
+        select:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        }
+    </style>
+    
+</head>
+<body>
+    <div class="register-box">
+        <h1>Register</h1>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="textbox">
+                <input type="text" placeholder="Name" name="name"  />
+            </div>
+            <div class="textbox">
+                <input type="email"  placeholder="Email" name="email" />
+            </div>
+            <div class="textbox">
+                <input type="password"  placeholder="Password" name="password"  />
+            </div>
+
+            <div class="textbox">
+                <input type="text"   placeholder="Phone" name="phone" />
+            </div>
+
+            <input class="btn" type="submit" value="Sign up" name="submit" />
+        </form>
+
+        <div class="signin">
+            Already have an account?<a href="{{ url_for('login') }}">Log In</a>
+        </div>
+    </div>
+</body>
+</html>
