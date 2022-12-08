@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product</title>
+  </script>
+</head>
+<body>
+    
+    <div class="add-box">
+        <h1>add new product</h1>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="">
+                <input type="text" placeholder="name" name="name"  />
+                <textarea rows="10" cols="50" placeholder="description" name="description"></textarea>
+                <input type="text" placeholder="link" name="link" />
+                <input type="number" placeholder="price" name="price" min="1"/>
+                <input type="checkbox" placeholder="available" name="available"  />available<br>
+                start <input type="date" placeholder="startAt " name="startAt "/>
+                due <input type="date" placeholder="endAt " name="endAt" />
+                
+            </div>
+                <input type="reset">
+                <input class="btn" type="submit" value="submit" name="submit" />
+        </form>
+    
+        <div class="home">
+            <a href="{{ url_for('register') }}">return to homepage</a>
+        </div>
+    </div>    
+
+    <table>
+        <tr>
+            {% for col in columns %}
+                <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+            {% for row in rows %}
+            <tr>
+                {% for col in row %}
+                <td>{{ col }}</td>
+                    {% endfor %}
+                </tr>
+        {% endfor %}
+    </table>
+          
+</body>
+</html>
