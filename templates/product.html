@@ -30,18 +30,22 @@
     </div>    
 
     <table>
-        <tr>
-            {% for col in columns %}
-                <th>{{ col }}</th>
-            {% endfor %}
-        </tr>
+        <thead>
+            <tr>
+                {% for col in columns %}
+                <th>{{col}}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
             {% for row in rows %}
             <tr>
-                {% for col in row %}
-                <td>{{ col }}</td>
-                    {% endfor %}
-                </tr>
-        {% endfor %}
+                {% for value in row %}
+                <td>{{value}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
           
 </body>
