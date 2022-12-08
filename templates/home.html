@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style type="text/css">
+        h1 {
+            padding-top: 50px;
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            color: #bbd88d;
+            text-align: center;
+            font-size: 70px;
+        }
+        .container {
+            text-align: center;
+        }
+        a {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            font-size: 30px;
+            color: #b4bd35;
+            
+            padding: 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            line-height:70px;
+           
+            
+        }
+        body{
+            background-image : url("./templates/homepage_wall.jpg");
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <h1>Homepage</h1>
+    <div class="container">
+        <a href="{{ url_for('login') }}">Login</a><br>
+        <a href="{{ url_for('register') }}">Register</a><br>
+    </div>
+</body>
+</html>
