@@ -11,6 +11,7 @@ from flask_jwt_extended import(
     JWTManager, jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies, set_access_cookies
 )
 from functools import wraps
+
 import os
 
 jwt = JWTManager()
@@ -39,7 +40,7 @@ login_manager.login_view = 'login'
 def db_connection():
     conn = None
     try:
-        conn = sqlite3.connect("database.db")
+        conn = sqlite3.connect("database1.db")
     except sqlite3.error as e:
         print(e)
     return conn
@@ -64,7 +65,7 @@ class Product(db.Model):
     id  = db.Column(db.Integer, primary_key=True)
     name    = db.Column(db.String(20),)
     description = db.Column(db.String(20))
-    picture = db.Column(db.String())
+    picture = db.Column(db.String)
     available = db.Column(db.Boolean)
     price   = db.Column(db.Integer,)
     startAt = db.Column(db.Date)
@@ -125,31 +126,11 @@ class ProductForm(FlaskForm):
     #colors = FieldList(FormField(ColorForm)) ##need color form
     #sizes = FieldList(FormField(SizeForm)) ##need size form
     price = IntegerField('price', validators=[InputRequired()])
-    available = BooleanField(false_values=(False, 'false', '0'))
+    available = BooleanField(false_values=(False, 'false','False'))
     startAt = DateField('start_time',format="%Y-%m-%d")
     endAt = DateField('end_time',format="%Y-%m-%d")
     submit = SubmitField('upload')
 
-
-"""
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token=None
-        if 'x-access-token' in request.headers:
-            token =request.headers['x-access-token']
-        if not token:
-            return jsonify({'message': 'Token is missing!'}),401
-        try:
-            token= jwt.encode().decode(token, app.config['SECRET_KEY'])
-            current_user=User.query.filter_by(id=User.id).first()
-        except:
-            return jsonify({'message': 'Token is invalid!'}), 401  
-
-        return f(current_user, *args,**kwargs)
-
-    return decorated
-"""
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -163,20 +144,11 @@ def login():
         if user:
             if bcrypt.check_password_hash(user.password, form.password.data):
                 login_user(user)
-                #payload = {
-                #    'id': user.id,
-                #    'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-                #    'iat': datetime.datetime.utcnow()
-                #}
-                #token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256').encode().decode('utf-8')
-                
-                #return jsonify({'token': token.encode().decode('utf-8')})
-                #return redirect(url_for('dashboard'))
                 response = jsonify({"msg": "login successful"})
                 access_token = create_access_token(identity=user.id)
                 set_access_cookies(response, access_token)
-                jsonify({'login_status':'seccess','jwt':access_token})
-                return jsonify({'login_status':'seccess','jwt':access_token})#redirect(url_for('dashboard'))
+                
+                return redirect(url_for('dashboard', jwt=access_token))
             else:
                 return make_response('Please insert correct password!', 403, {'wWW-Authenticate':'Basic realm: "Authentication Failed!"'}) 
         return make_response('User not found!', 403, {'wWW-Authenticate':'Basic realm: "Authentication Failed!"'})          
@@ -186,7 +158,8 @@ def login():
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    jwt = request.args.get('jwt')
+    return render_template('dashboard.html',jwt=jwt)
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
@@ -203,6 +176,7 @@ def patch():
     form=PatchForm()
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
+    jwt = request.args.get('jwt')
     if form.validate_on_submit():
            user.name=form.name.data 
            user.phone=form.phone.data
@@ -210,8 +184,9 @@ def patch():
             #User.name=form.name.data
             #User.phone=form.phone.data
            db.session.commit()
-           return redirect(url_for('dashboard'))
-    return render_template('patch.html',form=form)
+           return redirect(url_for('dashboard',jwt=jwt))
+    
+    return render_template('patch.html',form=form,jwt=jwt)
 
 @ app.route('/users', methods=['GET', 'POST'])
 def register():
@@ -252,31 +227,48 @@ def single_book(id):
 @jwt_required()
 def product():
     form=ProductForm()
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    jwt = request.args.get('jwt')
     if form.validate_on_submit():
         
-        new_user = Product(name=form.name.data,description=form.description.data,price=form.price.data,picture=form.picture.data,available=form.available.data,startAt=form.startAt.data,endAt=form.endAt.data )
+        new_user = Product(name=form.name.data,description=form.description.data,price=form.price.data,picture=form.picture.data,available=form.available.data,startAt=form.startAt.data,endAt=form.endAt.data,sellerId=user.id )
         db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('dashboard'))
-        
-        """
-        product = Product.query.get(current_user_id)
-        now_data={
-            "status": 0,
-            "message": "success",
-            "data": {
-                "id": user.id,
-                "name": user.name,
-                "email": user.email,
-                "phone": user.phone
-            }
+        return redirect(url_for('product',jwt=jwt))
+    
+    conn = sqlite3.connect('database1.db')
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    c = conn.cursor()
+    c.execute("SELECT * FROM product WHERE sellerId=?", (user.id,))
+    rows = c.fetchall()
+    columns = [col[0] for col in c.description]
+    
+    return render_template('product.html', form=form,jwt=jwt, rows=rows, columns=columns)    
 
-        }
-        if id!=user.id:
-            return 'Unauthenticated!'
-        return jsonify(now_data)
-        """
-    return render_template('product.html', form=form)    
+@app.route("/sellers/<int:SellerId>/products", methods=["GET"])  ## get seller's products
+@login_required
+def get_seller_product(SellerId):
+    jwt = request.args.get('jwt')
+    c = sqlite3.connect('database1.db').cursor()
+    c.execute("SELECT * FROM product WHERE sellerId=?", (SellerId,))
+    rows = c.fetchall()
+    columns = [col[0] for col in c.description]
+
+    return render_template('product1.html', jwt=jwt,rows=rows, columns=columns)
+
+@app.route("/products/<int:ProductId>", methods=["GET","PATCH"])  ## get the product. update the product 
+@login_required
+def get_product(ProductId):
+    wt = request.args.get('jwt')
+    c = sqlite3.connect('database1.db').cursor()
+    c.execute("SELECT * FROM product WHERE id=?", (ProductId,))
+    rows = c.fetchall()
+    columns = [col[0] for col in c.description]
+
+    return render_template('product2.html', jwt=jwt,rows=rows, columns=columns)
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
