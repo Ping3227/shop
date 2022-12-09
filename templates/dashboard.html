@@ -5,13 +5,41 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>SHOP</title>
+    <style>
+        h1{
+            font-size: 60px;
+            color: rgb(9, 122, 85);
+        }
+        body {
+            margin: 60px;
+            
+            font-family: sans-serif;
+            background-color: #ffffff;
+            
+        }
+        body a{
+            
+            text-decoration: none;
+            background: none;
+            border: none;
+            color: #4caf50;
+            
+            font-size: 30px;
+            padding: 5px;
+            
+            
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Hello you are logged in.</h1>
-    <br><a href="{{url_for('patch')}}">Press here to update your imformation</a><br>
-    <a href="{{url_for('logout')}}">Press here to logout</a>
+    <h1>Welcome to SHOP</h1>
+    <a href="{{url_for('patch',jwt=jwt)}}">Update personal Information</a><br><br>
+    <a href="{{url_for('product',jwt=jwt)}}">view my Products</a><br><br>
+    <a href="">view my Orders</a><br><br>
+    <a href="">Manage my Orders</a><br><br>
+    <a href="{{url_for('logout')}}">Logout</a>
 </body>
 
 </html>
