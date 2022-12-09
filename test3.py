@@ -53,7 +53,7 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     __tablename__='User'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     name = db.Column(db.String(20),)
     email    = db.Column(db.String(20), nullable=False,unique=True)
     password = db.Column(db.String(80),)
@@ -62,27 +62,39 @@ class User(db.Model, UserMixin):
 
 class Product(db.Model):
     __tablename__='Product'
-    id  = db.Column(db.Integer, primary_key=True)
+    id  = db.Column(db.Integer, primary_key=True,autoincrement=True)
     name    = db.Column(db.String(20),)
     description = db.Column(db.String(20))
     picture = db.Column(db.String)
+    colors = db.Column(db.String)
+    sizes = db.Column(db.String)
+    inventories = db.Column(db.Integer,)
     available = db.Column(db.Boolean)
     price   = db.Column(db.Integer,)
     startAt = db.Column(db.Date)
     endAt   = db.Column(db.Date)
     sellerId = db.Column(db.Integer,db.ForeignKey("User.id", ondelete="CASCADE"))
-
+'''
+class List(db.Model):
+    __tablename__='List'
+    id  = db.Column(db.Integer, primary_key=True)
+    itemId = db.Column(db.Integer,)
+    inventory = db.Column(db.Integer,)
+    productId = db.Column(db.Integer,db.ForeignKey("Product.id", ondelete="CASCADE"))
+    color_id  = db.Column(db.Integer,db.ForeignKey("Color.id", ondelete="CASCADE"))
+    size_id   = db.Column(db.Integer,db.ForeignKey("Size.id", ondelete="CASCADE"))   
+'''
 class Color(db.Model):
     __tablename__='Color'
     id  = db.Column(db.Integer, primary_key=True)
-    color_id    = db.Column(db.Integer,db.ForeignKey("Product.id", ondelete="CASCADE"))
-    name    = db.Column(db.String(20),)  
+    name    = db.Column(db.String,db.ForeignKey("Product.colors", ondelete="CASCADE"))  
+    color    = db.Column(db.String)
 
 class Size(db.Model):
     __tablename__='Size'
     id  = db.Column(db.Integer, primary_key=True)
-    size_id    = db.Column(db.Integer,db.ForeignKey("Product.id", ondelete="CASCADE"))
-    name    = db.Column(db.String(20),) 
+    name    = db.Column(db.String,db.ForeignKey("Product.sizes", ondelete="CASCADE"))  
+    size    = db.Column(db.String)
 
 
 class RegisterForm(FlaskForm):
@@ -123,8 +135,8 @@ class ProductForm(FlaskForm):
     name = StringField(validators=[InputRequired(), Length(max=10)], render_kw={"placeholder": "Name"})
     description = StringField(validators=[InputRequired(), Length(max=100)], render_kw={"placeholder": "briefy describe"})
     picture = StringField(validators=[InputRequired(), Length(max=100)], render_kw={"placeholder": "link"})
-    #colors = FieldList(FormField(ColorForm)) ##need color form
-    #sizes = FieldList(FormField(SizeForm)) ##need size form
+    colors = StringField(validators=[InputRequired(), Length(max=100)], render_kw={"placeholder": "colors"}) ##need color form
+    sizes = StringField(validators=[InputRequired(), Length(max=100)], render_kw={"placeholder": "sizes"}) ##need size form
     price = IntegerField('price', validators=[InputRequired()])
     available = BooleanField(false_values=(False, 'false','False'))
     startAt = DateField('start_time',format="%Y-%m-%d")
@@ -232,16 +244,27 @@ def product():
     jwt = request.args.get('jwt')
     if form.validate_on_submit():
         
-        new_user = Product(name=form.name.data,description=form.description.data,price=form.price.data,picture=form.picture.data,available=form.available.data,startAt=form.startAt.data,endAt=form.endAt.data,sellerId=user.id )
+        new_user = Product(name=form.name.data,description=form.description.data,colors=form.colors.data,sizes=form.sizes.data,price=form.price.data,picture=form.picture.data,available=form.available.data,startAt=form.startAt.data,endAt=form.endAt.data,sellerId=user.id )
+        new_colors=Color(color=form.colors.data,name=form.name.data)
+        new_sizes=Size(size=form.sizes.data,name=form.name.data)
+        
+        
         db.session.add(new_user)
+        db.session.add(new_colors)
+        db.session.add(new_sizes)
+        number_color=Color.query.filter(Color.color==form.colors.data,Color.name==form.name.data).count()
+        number_size=Size.query.filter(Size.size==form.colors.data,Size.name==form.name.data).count()
+        new_user.inventories=number_color+number_size
         db.session.commit()
+        
         return redirect(url_for('product',jwt=jwt))
     
     conn = sqlite3.connect('database1.db')
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    #product = Product.query.filter(Product.name==form.name.data).first()
+
     c = conn.cursor()
-    c.execute("SELECT id,name,available,price,startAt,endAt,sellerId FROM product WHERE sellerId=?", (user.id,))
+    c.execute("SELECT id,name,available,price,startAt,colors,sizes,inventories,endAt,sellerId FROM product WHERE sellerId=?", (user.id,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
     
@@ -261,7 +284,7 @@ def get_seller_product(SellerId):
 @app.route("/products/<int:ProductId>", methods=["GET","PATCH"])  ## get the product. update the product 
 @login_required
 def get_product(ProductId):
-    wt = request.args.get('jwt')
+    jwt = request.args.get('jwt')
     c = sqlite3.connect('database1.db').cursor()
     c.execute("SELECT * FROM product WHERE id=?", (ProductId,))
     rows = c.fetchall()
