@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Product</title>
+  <title>my Product</title>
   <style>
     body {
         margin: 0;
@@ -37,6 +37,7 @@
     input{
         border: none;
         border-bottom: 3px solid #4caf50;
+        font-size: 18px;
     }
     table {
       margin: 20px auto;
@@ -52,9 +53,20 @@
         border: none;
         height: 30px;
         padding: 2px;
+        text-align: center;
     }   
+    a{
+        text-decoration: none;
+        color: #0c8b4c;
+        font-size: 20px;
+    }
+    td a:hover{
+        color: #044d28;
+        font-size: 30px;
+    }
     tr:hover {
         background: #F5F5F5;
+        
     }
 
     .dashboard{
@@ -68,13 +80,13 @@
 <body>
     
     <div class="add-box">
-        <h1>ADD</h1>
+        <h1>Add to Products</h1>
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <div class="">
                 <input type="text" placeholder="name" name="name"  />
                
-                <input type="text" placeholder="link" name="picture" />
+                <input type="text" placeholder=" picture's link" name="picture" />
                 <input type="number" placeholder="price" name="price" min="1"/>
                 
                 <p><textarea style="border: 2px solid #4caf50;" rows="7" cols="120" placeholder="description" name="description"></textarea></p>
@@ -87,7 +99,7 @@
         </form>
     
         <div class="dashboard">
-            <a href="{{ url_for('dashboard',jwt=jwt) }}">return to dashboard</a>
+            <a href="{{ url_for('dashboard',jwt=jwt) }}">Return To Dashboard</a>
         </div>
     </div>    
     <h1 style="text-align: center;">Products</h1>
@@ -97,14 +109,27 @@
                 {% for col in columns %}
                 <th style="font-weight: bold; color: #fff; background-color: rgb(51, 185, 129); padding: 10px;">{{col}}</th>
                 {% endfor %}
-            </tr>
+               
         </thead>
         <tbody>
             {% for row in rows %}
             <tr>
                 {% for value in row %}
-                <td style="padding: 10px;">{{value}}</td>
+                    {% if loop.index == 2 %}
+                        <td style="padding: 10px;"><a  href="{{ url_for('get_product', ProductId=row[0], jwt=jwt) }}">{{value}}</a></td> 
+                    {% else %}
+                        {% if loop.index == 3 %}
+                            {% if value == 1 %}
+                                <td style="padding: 10px;">True</td>
+                            {% else %}
+                                <td style="padding: 10px;">False</td>
+                            {% endif %}
+                        {% else %}
+                            <td style="padding: 10px;">{{value}}</td>
+                        {% endif %}
+                    {% endif %}
                 {% endfor %}
+                 
             </tr>
             {% endfor %}
         </tbody>
