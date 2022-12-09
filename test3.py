@@ -241,7 +241,7 @@ def product():
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     c = conn.cursor()
-    c.execute("SELECT * FROM product WHERE sellerId=?", (user.id,))
+    c.execute("SELECT id,name,available,price,startAt,endAt,sellerId FROM product WHERE sellerId=?", (user.id,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
     
@@ -252,7 +252,7 @@ def product():
 def get_seller_product(SellerId):
     jwt = request.args.get('jwt')
     c = sqlite3.connect('database1.db').cursor()
-    c.execute("SELECT * FROM product WHERE sellerId=?", (SellerId,))
+    c.execute("SELECT id,name,available,price,startAt,endAt,sellerId FROM product WHERE sellerId=?", (SellerId,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
 
