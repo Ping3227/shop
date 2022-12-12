@@ -57,31 +57,31 @@
 ## 三、Product功能介紹
 
 ### 3.1賣家新增販賣商品
-   1. 登入後，使用http://127.0.0.1:5000/api/sellers/me/products的POST功能，輸入相關資訊新增產品
+   1. 登入後，使用 http://127.0.0.1:5000/api/sellers/me/products 的POST功能，輸入相關資訊新增產品
    
 
 ### 3.2賣家獲得全部產品資訊
-   1. 使用http://127.0.0.1:5000/api/sellers/me/products的GET功能，取得全部產品相關資訊
+   1. 使用 http://127.0.0.1:5000/api/sellers/me/products 的GET功能，取得全部產品相關資訊
    
 
 ### 3.3賣家獲得特定產品資訊
-   1. 使用http://127.0.0.1:5000/api/sellers/<SellerId>/products的GET功能，取得特定產品資訊
+   1. 使用 http://127.0.0.1:5000/api/sellers/{ellerId}/products 的GET功能，取得特定產品資訊
     
 
 ### 3.4賣家更新特定產品資訊
-   1. 登入後，使用http://127.0.0.1.5000/api/products/<ProductId>的PATCH，更新特定產品資訊
+   1. 登入後，使用 http://127.0.0.1.5000/api/products/{ProductId} 的PATCH，更新特定產品資訊
    
    
 
 ### 3.5賣家刪除掉特定產品(可不用)
-   1. 登入後，使用http://127.0.0.1:5000/api/products/{id}的DELETE，刪除特定產品資訊
+   1. 登入後，使用 http://127.0.0.1:5000/api/products/{id} 的DELETE，刪除特定產品資訊
    
      
 
 ## 四、Order功能介紹
 
 ### 4.1 買家新增訂單
-   1. 登入後，使用 http://127.0.0.1:5000/api/buyers/me/orders的POST，來新增所想訂的訂單
+   1. 登入後，使用 http://127.0.0.1:5000/api/buyers/me/orders 的POST，來新增所想訂的訂單
  
  
 ### 4.2 買家查看訂單
