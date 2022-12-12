@@ -17,17 +17,18 @@
 
 ### 2.1 建立買家、賣家帳號
 1. 使用http://127.0.0.1:5000/api/users的POST功能，來新增使用者
+![registerPage](/image/3.JPG)
    
 2. 新增買家，輸入相關資訊並且type要打成buyer
-   
 3. 新增賣家輸入相關資訊並且type要打成seller
-   
+![register](/image/register.JPG)
+
 4. 以下為建立資料庫裡的人員
    
 
 ### 2.2 使用者登入帳號
 1. 使用http://127.0.0.1:5000/api/users/signIn的POST功能，來登入帳號
-   
+![signIn](/image/signIn.JPG)   
 2. 輸入信箱與密碼登入成功產生Json Web Token，讓使用者可以一段時間內保有此狀態在接下來的操作
    
 
