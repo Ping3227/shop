@@ -5,12 +5,12 @@
 ## 一、開啟程式
 1. 首先使用Visual Studio Code這個APP開啟名為【final_dbms】的資料夾
 
-   ![pycharm](./image/1.jpg#pic_left)
+   
 
 2. 按下右上角的Debug模式執行程式
-   ![begin](./image/2.jpg#pic_left)
+   
 3. 可以獲得本地端的網址http://127.0.0.1:5000/，就可以開始執行囉
-   ![net](./image/3.jpg#pic_left)
+   
 
 
 ## 二、User功能介紹
