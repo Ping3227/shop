@@ -34,6 +34,7 @@
 ![signIn](/image/signIn.JPG)   
 2. 輸入信箱與密碼登入成功產生Json Web Token，讓使用者可以一段時間內保有此狀態在接下來的操作
    
+![Token](/image/token.JPG)   
 
 ### 2.3使用者更改名字或手機號碼
 1. 登入後，使用 http://127.0.0.1:5000/api/users/{id} 的PATCH功能來修改資料
