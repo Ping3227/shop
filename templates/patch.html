@@ -1,24 +1,103 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-
-<body>
-    <h1>Update imformation Page</h1>
-
-    <form method="POST" action="">
-        {{ form.hidden_tag() }}
-        {{ form.name }}
-        {{ form.phone }}
-        {{ form.submit }}
-    </form>
-
+    <title>UpdatePage</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #F9F9F9;
+        }
+        .login-box {
+            width: 300px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgb(9, 122, 85);
+        }
+        .login-box h1 {
+            float: left;
+            font-size: 50px;
+            
+            margin-bottom: 20px;
+            padding: 13px 0;
+        }
+        .textbox {
+            width: 100%;
+            overflow: hidden;
+            font-size: 20px;
+            padding: 8px 0;
+            margin: 8px 0;
+            border-bottom: 1px solid #4caf50;
+        }
+        .textbox input {
+            border: none;
+            outline: none;
+            background: none;
+            color: rgb(14, 0, 0);
+            font-size: 18px;
+            width: 80%;
+            float: left;
+            margin: 0 10px;
+        }
+        .btn {
+            width: 100%;
+            background: none;
+            border: 2px solid #4caf50;
+            color: #4caf50;
+            padding: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 12px 0;
+        }
+        .signup {
+            text-align: center;
+            margin-top: 20px;
+            color: rgb(122, 228, 210);
+        }
+        .signup a {
+            text-decoration: none;
+            color: #4caf50;
+            font-size: 16px;
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus,
+        select:-webkit-autofill,
+        select:-webkit-autofill:hover,
+        select:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+        }
+    </style>
     
-</body>
+</head>
+<body>
+    <div class="login-box">
+        <h1>Update</h1>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="textbox">
+                <input type="name" placeholder="Name" name="name" value="" />
+            </div>
 
+            <div class="textbox">
+                <input type="phone" placeholder="Phone" name="phone" value="" />
+            </div>
+
+            <input class="btn" type="submit" value="Sign In" name="submit" />
+        </form>
+
+        <div class="signup">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        </div>
+    </div>
+</body>
 </html>
