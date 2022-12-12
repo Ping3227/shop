@@ -107,6 +107,9 @@ class RegisterForm(FlaskForm):
 
     password = PasswordField(validators=[
                              InputRequired(), Length(min=8, max=20)], render_kw={"placeholder": "Password"})
+    
+    type = PasswordField(validators=[
+                             InputRequired(), Length(max=20)], render_kw={"placeholder": "Type"})
 
     submit = SubmitField('Register')
     def validate_email(self,email):
@@ -148,7 +151,7 @@ def home():
     return render_template('home.html')
 
 
-@app.route('/users/signIn', methods=['GET', 'POST'])
+@app.route('/api/users/signIn', methods=['GET', 'POST'])
 def login():
     form = LoginForm()   
     if form.validate_on_submit():
@@ -169,6 +172,7 @@ def login():
 
 @app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
+@jwt_required()
 def dashboard():
     jwt = request.args.get('jwt')
     return render_template('dashboard.html',jwt=jwt)
@@ -181,7 +185,7 @@ def logout():
     unset_jwt_cookies(response)
     return redirect(url_for('login'))
 
-@app.route('/users/me', methods=['GET','POST'])
+@app.route('/api/users/me', methods=['GET','POST'])
 @login_required
 @jwt_required()
 def patch():
@@ -200,19 +204,19 @@ def patch():
     
     return render_template('patch.html',form=form,jwt=jwt)
 
-@ app.route('/users', methods=['GET', 'POST'])
+@ app.route('/api/users', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data)
-        new_user = User(name=form.name.data,email=form.email.data, password=hashed_password,phone=form.phone.data)
+        new_user = User(name=form.name.data,email=form.email.data, password=hashed_password,phone=form.phone.data,type=form.type.data)
         db.session.add(new_user)
         db.session.commit()
         return redirect(url_for('login'))
 
     return render_template('register.html', form=form)
 
-@app.route("/users/<int:id>", methods=["GET"])
+@app.route("/api/users/<int:id>", methods=["GET"])
 @login_required
 @jwt_required()
 def single_book(id):
@@ -234,7 +238,7 @@ def single_book(id):
             return 'Unauthenticated!'
         return jsonify(now_data)
 
-@app.route("/sellers/me/products", methods=["GET","POST"])
+@app.route("/api/sellers/me/products", methods=["GET","POST"])
 @login_required
 @jwt_required()
 def product():
@@ -242,6 +246,8 @@ def product():
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     jwt = request.args.get('jwt')
+    if user.type != 'seller':
+            return ('Unauthenticated!')
     if form.validate_on_submit():
         
         new_user = Product(name=form.name.data,description=form.description.data,colors=form.colors.data,sizes=form.sizes.data,price=form.price.data,picture=form.picture.data,available=form.available.data,startAt=form.startAt.data,endAt=form.endAt.data,sellerId=user.id )
@@ -270,7 +276,7 @@ def product():
     
     return render_template('product.html', form=form,jwt=jwt, rows=rows, columns=columns)    
 
-@app.route("/sellers/<int:SellerId>/products", methods=["GET"])  ## get seller's products
+@app.route("/api/sellers/<int:SellerId>/products", methods=["GET"])  ## get seller's products
 @login_required
 def get_seller_product(SellerId):
     jwt = request.args.get('jwt')
@@ -281,7 +287,7 @@ def get_seller_product(SellerId):
 
     return render_template('product1.html', jwt=jwt,rows=rows, columns=columns)
 
-@app.route("/products/<int:ProductId>", methods=["GET","PATCH"])  ## get the product. update the product 
+@app.route("/api/products/<int:ProductId>", methods=["GET","PATCH"])  ## get the product. update the product 
 @login_required
 def get_product(ProductId):
     jwt = request.args.get('jwt')
