@@ -21,6 +21,7 @@
    
 2. 新增買家，輸入相關資訊並且type要打成buyer
 3. 新增賣家輸入相關資訊並且type要打成seller
+
 ![register](/image/register.JPG)
 
 4. 以下為建立資料庫裡的人員
