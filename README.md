@@ -8,7 +8,7 @@
 
 2. 按下右上角的Debug模式執行程式
    
-3. 可以獲得本地端的網址http://127.0.0.1:5000/，就可以開始執行囉
+3. 可以獲得本地端的網址 http://127.0.0.1:5000/
 ![執行畫面](/image/1.JPG)
 ![Home](/image/2.JPG)
 
@@ -16,7 +16,7 @@
 ## 二、User功能介紹
 
 ### 2.1 建立買家、賣家帳號
-1. 使用http://127.0.0.1:5000/api/users的POST功能，來新增使用者
+1. 使用 http://127.0.0.1:5000/api/users 的POST功能，來新增使用者
 ![registerPage](/image/3.JPG)
    
 2. 新增買家，輸入相關資訊並且type要打成buyer
@@ -30,24 +30,24 @@
 ![userTable](/image/userTable.JPG)  
 
 ### 2.2 使用者登入帳號
-1. 使用http://127.0.0.1:5000/api/users/signIn的POST功能，來登入帳號
+1. 使用 http://127.0.0.1:5000/api/users/signIn 的POST功能，來登入帳號
 ![signIn](/image/signIn.JPG)   
 2. 輸入信箱與密碼登入成功產生Json Web Token，讓使用者可以一段時間內保有此狀態在接下來的操作
    
 
 ### 2.3使用者更改名字或手機號碼
-1. 登入後，使用http://127.0.0.1:5000/api/users/{id}的PATCH功能來修改資料
+1. 登入後，使用 http://127.0.0.1:5000/api/users/{id} 的PATCH功能來修改資料
    
 2. 可以發現圖中id=1的已成功修改  
    
    
 
 ### 2.4取得自己的資料
-   1. 登入後，使用http://127.0.0.1:5000/api/users/me的GET功能獲得資料
+   1. 登入後，使用 http://127.0.0.1:5000/api/users/me 的GET功能獲得資料
   
 
 ### 2.5(增)登出帳號
-   1. 使用http://127.0.0.1:5000/api/users/logout的POST功能刪除cookies中的JWT，以防有心人士使用
+   1. 使用 http://127.0.0.1:5000/api/users/logout 的POST功能刪除cookies中的JWT，以防有心人士使用
       
       
 
