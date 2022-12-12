@@ -41,7 +41,7 @@
    
 2. 可以發現圖中id=1的已成功修改  
    
- 
+![patch](/image/patch.JPG)  ![newdata](/image/newdata.JPG)  
    
 
 ### 2.4取得自己的資料
