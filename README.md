@@ -25,7 +25,7 @@
 ![register](/image/register.JPG)
 
 4. 以下為建立資料庫裡的人員
-   
+![userTable](/image/userTable.JPG)  
 
 ### 2.2 使用者登入帳號
 1. 使用http://127.0.0.1:5000/api/users/signIn的POST功能，來登入帳號
