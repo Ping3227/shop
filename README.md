@@ -46,7 +46,8 @@
 
 ### 2.4取得自己的資料
    1. 登入後，使用 http://127.0.0.1:5000/api/users/{id} 的GET功能獲得資料
-  
+
+![owndata](/image/userinformation.JPG) 
 
 ### 2.5(增)登出帳號
    1. 使用 http://127.0.0.1:5000/api/users/logout 的POST功能刪除cookies中的JWT，以防有心人士使用
