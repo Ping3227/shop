@@ -7,7 +7,7 @@
         margin: 20px auto;
         border-spacing: 0;
         border-collapse: collapse;
-        width: 100%;
+        width: 90%;
     }
     
     tr {
@@ -18,7 +18,14 @@
         height: 30px;
         padding: 2px;
         text-align: center;
-    }   
+    } 
+    img{
+        width: 50%;
+        height :50%;
+        position:absolute;
+        left:400px;
+        top:200px;
+    }
     </style>
 </head>
 <body>
@@ -36,12 +43,16 @@
                 {% for value in row %}
                     {% if loop.index == 7 %}
                         {% if value == 1 %}
-                            <td style="padding: 10px;">True</td>
+                            <td style="padding: 10px;">YES</td>
                         {% else %}
-                            <td style="padding: 10px;">False</td>
+                            <td style="padding: 10px;">NO</td>
                         {% endif %}
                     {% else %}
+                        {%if loop.index ==2%}
+                        <td><a  href="{{ url_for('update_product', ProductId=row[0], jwt=jwt) }}">{{value}}</a></td>
+                        {% else %}
                         <td style="padding: 10px;">{{value}}</td>
+                        {%endif%}
                     {% endif %}
                 {% endfor %}
                 {% if row[4] == 1 %}
@@ -52,6 +63,6 @@
             
         </tbody>
     </table>
-    <img src="{{link[0]}}">  
+    <img src = "{{ url_for('static', filename='IMG/'+link[0])}}">
 </body>
 </html>

@@ -38,6 +38,7 @@
         border: none;
         border-bottom: 3px solid #4caf50;
         font-size: 18px;
+        
     }
     table {
         margin: 20px auto;
@@ -85,12 +86,12 @@
         <form method="POST" action="">
             {{ form.hidden_tag() }}
             <div class="">
-                <input type="text" placeholder="name" name="name"  />
+                <input style="width: 10%;" type="text" placeholder="name" name="name"  />
                
-                <input type="text" placeholder="link" name="picture" />
-                <input type="number" placeholder="price" name="price" min="1"/>
-                <input type="text" placeholder="colors" name="colors" />
-                <input type="text" placeholder="sizes" name="sizes" />
+                <input style="width: 20%;" type="text" placeholder="link" name="picture" />
+                <input style="width: 10%;" type="number" placeholder="price" name="price" min="1"/>
+                <input style="width: 10%;" type="text" placeholder="colors" name="colors" />
+                <input style="width: 10%;" type="text" placeholder="sizes" name="sizes" />
                 
                 <p><textarea style="border: 2px solid #4caf50;" rows="7" cols="120" placeholder="description" name="description"></textarea></p>
                 <b style = "color: rgb(9, 122, 85);";> Start </b> <input type="date" placeholder="startAt " name="startAt" value="YYYY-MM-DD"/>
@@ -98,7 +99,7 @@
                 <input  type="checkbox" placeholder="available" name="available" checked /><b style = "color: rgb(9, 122, 85);">Available</b><br >
             </div>
                 <input class="btn"type="reset">
-                <input class="btn" type="submit" value="submit" name="submit" />
+                <input class="btn" type="submit" value="Submit" name="submit" />
         </form>
     
         <div class="dashboard">
