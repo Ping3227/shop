@@ -2,14 +2,31 @@
 <html>
 <head>
     <title>Product</title>
-  
+    <style>
+    table {
+        margin: 20px auto;
+        border-spacing: 0;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    tr {
+        border-bottom: 1px solid #cbcbcb;
+    }
+    th, td{
+        border: none;
+        height: 30px;
+        padding: 2px;
+        text-align: center;
+    }   
+    </style>
 </head>
 <body>
     <table>
         <thead>
             <tr>
                 {% for col in columns %}
-                <th>{{col}}</th>
+                <th style="font-weight: bold; color: #fff; background-color: rgb(51, 185, 129); padding: 10px;">{{col}}</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -17,7 +34,7 @@
             {% for row in rows %}
             <tr>
                 {% for value in row %}
-                    {% if loop.index == 5 %}
+                    {% if loop.index == 7 %}
                         {% if value == 1 %}
                             <td style="padding: 10px;">True</td>
                         {% else %}
@@ -32,8 +49,9 @@
                 {% endif %}
             </tr>
             {% endfor %}
+            
         </tbody>
     </table>
-          
+    <img src="{{link[0]}}">  
 </body>
 </html>

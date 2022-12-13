@@ -23,11 +23,18 @@
             text-decoration: none;
             background: none;
             border: none;
+            
             color: #4caf50;
             
             font-size: 30px;
-            padding: 5px;
+            padding: 7px;
             
+            
+        }
+        body a:hover{
+            
+            border-left: 5px solid #196e1b;
+            color: #196e1b;
             
         }
     </style>
@@ -36,8 +43,8 @@
 <body>
     <h1>Welcome to SHOP</h1>
     <a href="{{url_for('patch',jwt=jwt)}}">Update personal Information</a><br><br>
-    <a href="{{url_for('product',jwt=jwt)}}">view my Products</a><br><br>
-    <a href="">view my Orders</a><br><br>
+    <a href="{{url_for('product',jwt=jwt)}}">View my Products</a><br><br>
+    <a href="">View my Orders</a><br><br>
     <a href="">Manage my Orders</a><br><br>
     <a href="{{url_for('logout')}}">Logout</a>
 </body>
