@@ -20,7 +20,7 @@ app = Flask(__name__)
 pjdir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+ \
     os.path.join(pjdir, 'database1.db')
-
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'IMG')
 jwt.init_app(app)
 jwt=JWTManager(app)
 
@@ -146,6 +146,8 @@ class ProductForm(FlaskForm):
     endAt = DateField('end_time',format="%Y-%m-%d")
     submit = SubmitField('upload')
 
+class InventoriesForm(FlaskForm):
+    inventories = IntegerField('inventories', validators=[InputRequired()])
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -300,6 +302,69 @@ def get_product(ProductId):
 
     return render_template('product2.html', jwt=jwt,rows=rows, columns=columns,link=link)
     
+@app.route("/products/<int:ProductId>/invertories", methods=["GET","PATCH"]) ## update the products inventories 
+@login_required
+def update_product(ProductId):
+    form=InventoriesForm()
+    instance = Product.query.get(ProductId)
+    jwt = request.args.get('jwt')
+    if form.validate_on_submit():
+           instance.inventories =form.inventories.data
+           
+           
+           return redirect(url_for('update_product',jwt=jwt))
+    return render_template('product3.html', jwt=jwt,)
+
+### activity 
+@app.route("/sellers/me/activities", methods=["GET","POST"]) ## create activity  ## get my activity 
+@login_required
+def my_activity():
+    return 
+@app.route("/sellers/<int:SellerId>/activities", methods=["GET","PATCH"])  ## get the product. update the product 
+@login_required
+def get_activity():
+    return 
+@app.route("//activities/<int:activityId>", methods=["PATCH"]) ## update the products inventories 
+@login_required
+def update_activity():
+    return 
+
+### coupon 
+@app.route("/sellers/me/coupons", methods=["GET","POST"])   ## get and create 
+@login_required
+def my_seller_coupon():
+    return 
+@app.route("/sellers/<int:SellerId>/coupons", methods=["GET"]) ## get seller's coupon
+@login_required
+def get_coupons():
+    return 
+@app.route("/coupons/<int:CouponId>", methods=["PATCH"]) ##  update coupon
+@login_required
+def update_coupon():
+    return 
+@app.route("/buyers/me/coupons", methods=["GET"]) ## get my coupons
+@login_required
+def get_coupon():
+    return 
+@app.route("/buyers/me/coupons/<int:CouponId>", methods=["POST"]) ## create coupon 
+@login_required
+def my_buyer_coupon():
+    return 
+
+### orders
+@app.route("/buyers/me/orders", methods=["POST","GET"]) 
+@login_required
+def my_buyer_order():
+    return 
+@app.route("/sellers/me/orders", methods=["GET"]) 
+@login_required
+def my_seller_order():
+    return 
+@app.route("/orders/<int:OrderId>", methods=["GET","PATCH"]) 
+@login_required
+def get_order():
+    return 
+
 
 if __name__ == "__main__":
     app.run(debug=True)
