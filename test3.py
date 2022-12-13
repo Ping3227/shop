@@ -270,7 +270,7 @@ def product():
     #product = Product.query.filter(Product.name==form.name.data).first()
 
     c = conn.cursor()
-    c.execute("SELECT id,name,available,price,startAt,colors,sizes,inventories,endAt,sellerId FROM product WHERE sellerId=?", (user.id,))
+    c.execute("SELECT id,name,available,price,startAt,endAt,colors,sizes,inventories FROM product WHERE sellerId=?", (user.id,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
     
@@ -292,11 +292,13 @@ def get_seller_product(SellerId):
 def get_product(ProductId):
     jwt = request.args.get('jwt')
     c = sqlite3.connect('database1.db').cursor()
-    c.execute("SELECT * FROM product WHERE id=?", (ProductId,))
+    c.execute("SELECT id,name,description,colors,sizes,inventories,available,startAt,endAt,sellerId FROM product WHERE id=?", (ProductId,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
+    c.execute("SELECT picture FROM product WHERE id=?", (ProductId,))
+    link = c.fetchone()
 
-    return render_template('product2.html', jwt=jwt,rows=rows, columns=columns)
+    return render_template('product2.html', jwt=jwt,rows=rows, columns=columns,link=link)
     
 
 if __name__ == "__main__":
