@@ -6,7 +6,8 @@ from wtforms import StringField, PasswordField, SubmitField, FieldList, FormFiel
 from wtforms.validators import InputRequired, Length, ValidationError
 from flask_bcrypt import Bcrypt
 import sqlite3,json
-import jwt, datetime
+import jwt
+import datetime
 from flask_jwt_extended import(
     JWTManager, jwt_required, create_access_token, get_jwt_identity, unset_jwt_cookies, set_access_cookies
 )
@@ -14,6 +15,8 @@ from flask import Response
 from functools import wraps
 import sqlalchemy.types as types
 import os
+from itertools import chain
+
 
 
 
@@ -48,6 +51,8 @@ app.config["JWT_COOKIE_SECURE"] = False
 app.config['JWT_SECRET_KEY'] = 'thisisasecretkey'
 app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access']
+
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=90)
 
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
@@ -85,10 +90,13 @@ class Product(db.Model):
     name    = db.Column(db.String(20),)
     description = db.Column(db.String(100))
     picture = db.Column(db.String)
+    inventories = db.Column(db.Integer,)
     available = db.Column(db.Boolean)
+    colors = db.Column(db.String(20))
+    sizes = db.Column(db.String(20))
     price   = db.Column(db.Integer,)
-    startAt = db.Column(db.Date)
-    endAt   = db.Column(db.Date)
+    startAt = db.Column(db.DateTime)
+    endAt   = db.Column(db.DateTime)
     sellerID = db.Column(db.Integer)
 '''
 class List(db.Model):
@@ -103,12 +111,14 @@ class List(db.Model):
 class Color(db.Model):
     __tablename__='Color'
     colorID  = db.Column(db.Integer, primary_key=True)
-    name    = db.Column(db.String(20))  
+    name    = db.Column(db.String(20))
+    color   = db.Column(db.String(20))
 
 class Size(db.Model):
     __tablename__='Size'
     sizeID  = db.Column(db.Integer, primary_key=True)
     name    = db.Column(db.String(20))  
+    size    = db.Column(db.String(20))
 
 class Item(db.Model):
     __tablename__='Item'
@@ -262,7 +272,7 @@ def register():
             "phone":userID.phone
         }
     return  jsonify({"status":"201","message":"Create Successfully","data": data})
-
+"""
 def get_data(product_obj: Product):
     colorID_name = {color_obj['pk']: color_obj['fields']['name'] for color_obj in json.loads(serializers.serialize("json", Color.objects.all()))}
     sizeID_name = {size_obj['pk']: size_obj['fields']['name'] for size_obj in json.loads(serializers.serialize("json", Size.objects.all()))}
@@ -326,11 +336,269 @@ def sellers_for_activities():
         return  jsonify({"status":"201","message":"Create activity Successfully","data": data})      
 
     # GET
+
     queryset = Activity.objects.filter(sellerID=id)
     if queryset.count() == 0:
         return Response(get_response_body(403, f"No product available"), status=403)
     data = [a_data['fields'] for a_data in json.loads(serializers.serialize("json", queryset))]
     return Response(get_response_body(200, f"List all activities of seller {id}", data), status=200)
+
+
+
+
+
+
+"""    
+
+
+@app.route("/sellers/me/products", methods=["GET","POST"])
+@jwt_required()
+def product():
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if request.method == "POST":
+        name, description, picture, colors, sizes, price, available, startAt, endAt = request.get_json()['name'], request.get_json()['description'], request.get_json()['picture'], request.get_json()['colors'], request.get_json()['sizes'], request.get_json()['price'], request.get_json()['available'], request.get_json()['startAt'], request.get_json()['endAt']
+        queryset = Product.query.filter(name==Product.name)
+        if queryset.count() > 0:
+            return jsonify("Product already exists"), 405
+        startAt1=datetime.strptime(startAt,"%Y-%m-%d").date()
+        endAt1=datetime.strptime(endAt,"%Y-%m-%d").date()
+        new_user = Product(name=name,description=description,colors=colors,sizes=sizes,price=price,picture=picture,available=available,startAt=startAt1,endAt=endAt1,sellerID=user.userID )
+        new_colors=Color(color=colors,name=name)
+        new_sizes=Size(size=sizes,name=name)
+               
+        db.session.add(new_user)
+        db.session.add(new_colors)
+        db.session.add(new_sizes)
+        number_color=Color.query.filter(Color.color==colors,Color.name==name).count()
+        number_size=Size.query.filter(Size.size==sizes,Size.name==name).count()
+        if number_color and number_size:
+            new_user.inventories=(number_color+number_size)/2
+        else:
+            new_user.inventories+1
+        db.session.commit()
+            
+        return "Create Product seccessfully"
+    if request.method == "GET":
+        current_user_id = get_jwt_identity()
+        user_now = User.query.get(current_user_id)
+        c = sqlite3.connect('database1.db').cursor()
+        c.execute("SELECT * FROM Product WHERE sellerID=?", (user_now.userID,))
+        rows = c.fetchall()
+        columns = [col[0] for col in c.description]
+        data=[dict(zip(columns,row)) for row in rows ]
+        return jsonify ({
+            "status":"200",
+            "message":"Get Product",
+            "data":data})
+
+@app.route("/sellers/<int:sellerID>/products", methods=["GET"])
+@jwt_required()
+def sellerID_products(sellerID):
+    queryset = Product.query.filter(sellerID==Product.sellerID)
+    if queryset.count() == 0:
+        return "Seller has no this product"
+
+    current_user_id = get_jwt_identity()
+    user_now = User.query.get(current_user_id)
+    c = sqlite3.connect('database1.db').cursor()
+    c.execute("SELECT * FROM Product WHERE sellerID=?", (user_now.userID,))
+    rows = c.fetchall()
+    columns = [col[0] for col in c.description]
+    data=[dict(zip(columns,row)) for row in rows ]
+    return jsonify ({
+            "status":"200",
+            "message":"Get Product",
+            "data":data})
+
+
+@app.route("/products/<int:productID>", methods=["GET", "PATCH"])
+@jwt_required()
+def product_productID(productID):
+    queryset = Product.query.filter(productID==Product.productID)
+    if queryset.count() == 0:
+        return "ProductID doesn't exist"
+    if request.method == "PATCH":
+        product=Product.query.get(productID)
+        current_user_id = get_jwt_identity()
+        user_now = User.query.get(current_user_id)
+        if user_now.userID != product.sellerID:
+            return "This Product isn't yours" 
+           
+        available = request.get_json()['available']
+        product.available=available
+        db.session.add(product)       
+        db.session.commit()
+        data = {
+        "id": product.productID,
+        "name": product.name,
+        "description": product.description,
+        "picture": product.picture,
+        "colors": product.colors,
+        "sizes": product.sizes,
+        "price": product.price,
+        "available": product.available,
+        "inventories": product.inventories,
+        "startAt": product.startAt,
+        "endAt": product.endAt,
+        "sellerId": product.sellerID
+        }
+        return jsonify ({
+            "status":"200",
+            "message":"Product has been successfully patched",
+            "data":data}) 
+    product=Product.query.get(productID)              
+    message = "Get product"
+    data = {
+        "id": product.productID,
+        "name": product.name,
+        "description": product.description,
+        "picture": product.picture,
+        "colors": product.colors,
+        "sizes": product.sizes,
+        "price": product.price,
+        "available": product.available,
+        "inventories": product.inventories,
+        "startAt": product.startAt,
+        "endAt": product.endAt,
+        "sellerId": product.sellerID
+  }
+    return jsonify ({
+            "status":"200",
+            "message": message,
+            "data":data})                
+
+@app.route("/products/<int:productID>/inventories", methods=["GET", "PATCH"])
+@jwt_required()
+def patch_inventories(productID):
+    if request.method=='PATCH':
+        queryset = Product.query.filter(productID==Product.productID)
+        if queryset.count() == 0:
+            return "Product isn't exists",403
+        product=Product.query.get(productID)
+        current_user_id = get_jwt_identity()
+        user_now = User.query.get(current_user_id)
+        if user_now.userID != product.sellerID:
+                return "This Product isn't yours"
+        colorID, sizeID, inventory = request.get_json()['colorId'], request.get_json()['sizeId'], request.get_json()['inventory']
+        color = Color.query.filter(colorID==Color.colorID)
+        size =  Size.query.filter(sizeID==Size.sizeID)
+        if color.count() and size.count() == 0:
+            return "There's no product with colorID and sizeID ", 405
+        product.inventories=inventory
+        db.session.add(product)       
+        db.session.commit()
+    product=Product.query.get(productID)
+    message = "The inventory of product has been successfully patched"
+    data = {
+        "id": product.productID,
+        "name": product.name,
+        "description": product.description,
+        "picture": product.picture,
+        "colors": product.colors,
+        "sizes": product.sizes,
+        "price": product.price,
+        "available": product.available,
+        "inventories": product.inventories,
+        "startAt": product.startAt,
+        "endAt": product.endAt,
+        "sellerId": product.sellerID
+  }
+    return jsonify ({
+            "status":"200",
+            "message": message,
+            "data":data})   
+        
+
+"""
+@app.route("/api/sellers/<int:SellerId>/products", methods=["GET"])  ## get seller's products
+@login_required
+def get_seller_product(SellerId):
+    jwt = request.args.get('jwt')
+    c = sqlite3.connect('database1.db').cursor()
+    c.execute("SELECT id,name,available,price,startAt,endAt,sellerId FROM product WHERE sellerId=?", (SellerId,))
+    rows = c.fetchall()
+    columns = [col[0] for col in c.description]
+
+    return render_template('product1.html', jwt=jwt,rows=rows, columns=columns)
+
+@app.route("/api/products/<int:ProductId>", methods=["GET","PATCH"])  ## get the product. update the product 
+@login_required
+def get_product(ProductId):
+    jwt = request.args.get('jwt')
+    c = sqlite3.connect('database1.db').cursor()
+    c.execute("SELECT id,name,description,colors,sizes,inventories,available,startAt,endAt,sellerId FROM product WHERE id=?", (ProductId,))
+    rows = c.fetchall()
+    columns = [col[0] for col in c.description]
+    c.execute("SELECT picture FROM product WHERE id=?", (ProductId,))
+    link = c.fetchone()
+
+    return render_template('product2.html', jwt=jwt,rows=rows, columns=columns,link=link)
+    
+@app.route("/products/<int:ProductId>/invertories", methods=["GET","PATCH"]) ## update the products inventories 
+@login_required
+def update_product(ProductId):
+    form=InventoriesForm()
+    instance = Product.query.get(ProductId)
+    jwt = request.args.get('jwt')
+    if form.validate_on_submit():
+           instance.inventories =form.inventories.data
+           
+           
+           return redirect(url_for('update_product',jwt=jwt))
+    return render_template('product3.html', jwt=jwt,)
+
+### activity 
+@app.route("/sellers/me/activities", methods=["GET","POST"]) ## create activity  ## get my activity 
+@login_required
+def my_activity():
+    return 
+@app.route("/sellers/<int:SellerId>/activities", methods=["GET","PATCH"])  ## get the product. update the product 
+@login_required
+def get_activity():
+    return 
+@app.route("//activities/<int:activityId>", methods=["PATCH"]) ## update the products inventories 
+@login_required
+def update_activity():
+    return 
+
+### coupon 
+@app.route("/sellers/me/coupons", methods=["GET","POST"])   ## get and create 
+@login_required
+def my_seller_coupon():
+    return 
+@app.route("/sellers/<int:SellerId>/coupons", methods=["GET"]) ## get seller's coupon
+@login_required
+def get_coupons():
+    return 
+@app.route("/coupons/<int:CouponId>", methods=["PATCH"]) ##  update coupon
+@login_required
+def update_coupon():
+    return 
+@app.route("/buyers/me/coupons", methods=["GET"]) ## get my coupons
+@login_required
+def get_coupon():
+    return 
+@app.route("/buyers/me/coupons/<int:CouponId>", methods=["POST"]) ## create coupon 
+@login_required
+def my_buyer_coupon():
+    return 
+
+### orders
+@app.route("/buyers/me/orders", methods=["POST","GET"]) 
+@login_required
+def my_buyer_order():
+    return 
+@app.route("/sellers/me/orders", methods=["GET"]) 
+@login_required
+def my_seller_order():
+    return 
+@app.route("/orders/<int:OrderId>", methods=["GET","PATCH"]) 
+@login_required
+def get_order():
+    return 
+"""
 
 if __name__ == "__main__":
     app.run(debug=True)
