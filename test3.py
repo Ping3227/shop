@@ -18,8 +18,6 @@ import os
 from itertools import chain
 
 
-
-
 class ChoiceType(types.TypeDecorator):
 
     impl = types.String
@@ -90,7 +88,7 @@ class Product(db.Model):
     name    = db.Column(db.String(20),)
     description = db.Column(db.String(100))
     picture = db.Column(db.String)
-    inventories = db.Column(db.Integer,)
+    inventories = db.Column(db.Integer)
     available = db.Column(db.Boolean)
     colors = db.Column(db.String(20))
     sizes = db.Column(db.String(20))
@@ -98,27 +96,18 @@ class Product(db.Model):
     startAt = db.Column(db.DateTime)
     endAt   = db.Column(db.DateTime)
     sellerID = db.Column(db.Integer)
-'''
-class List(db.Model):
-    __tablename__='List'
-    id  = db.Column(db.Integer, primary_key=True)
-    itemId = db.Column(db.Integer,)
-    inventory = db.Column(db.Integer,)
-    productId = db.Column(db.Integer,db.ForeignKey("Product.id", ondelete="CASCADE"))
-    color_id  = db.Column(db.Integer,db.ForeignKey("Color.id", ondelete="CASCADE"))
-    size_id   = db.Column(db.Integer,db.ForeignKey("Size.id", ondelete="CASCADE"))   
-'''
+
 class Color(db.Model):
     __tablename__='Color'
     colorID  = db.Column(db.Integer, primary_key=True)
     name    = db.Column(db.String(20))
-    color   = db.Column(db.String(20))
+    
 
 class Size(db.Model):
     __tablename__='Size'
     sizeID  = db.Column(db.Integer, primary_key=True)
     name    = db.Column(db.String(20))  
-    size    = db.Column(db.String(20))
+   
 
 class Item(db.Model):
     __tablename__='Item'
@@ -272,119 +261,71 @@ def register():
             "phone":userID.phone
         }
     return  jsonify({"status":"201","message":"Create Successfully","data": data})
-"""
-def get_data(product_obj: Product):
-    colorID_name = {color_obj['pk']: color_obj['fields']['name'] for color_obj in json.loads(serializers.serialize("json", Color.objects.all()))}
-    sizeID_name = {size_obj['pk']: size_obj['fields']['name'] for size_obj in json.loads(serializers.serialize("json", Size.objects.all()))}
-    productID, name, description, picture, price, available, startAt, endAt, sellerID = product_obj.productID, product_obj.name, product_obj.description, product_obj.picture, product_obj.price, product_obj.available, product_obj.startAt, product_obj.endAt, product_obj.sellerID
-    colorIDs = list(set([item.colorID for item in Item.objects.filter(productID=productID)]))
-    sizeIDs = list(set([item.sizeID for item in Item.objects.filter(productID=productID)]))
-    colors_dic, sizes_dic = [dict(colorID=colorID, name=colorID_name[colorID]) for colorID in colorIDs], [dict(sizeID=sizeID, name=sizeID_name[sizeID]) for sizeID in sizeIDs]
-    inventories = []
-    for inventory_obj in Item.objects.filter(productID=productID):
-        colorID, sizeID, inventory = inventory_obj.colorID, inventory_obj.sizeID, inventory_obj.inventory
-        inventories.append(dict(color=dict(id=colorID, name=colorID_name[colorID]), size=dict(id=sizeID, name=sizeID_name[sizeID]), inventory=inventory))
-    return dict(productID=productID, name=name, description=description, picture=picture, colors=colors_dic, sizes=sizes_dic, price=price, available=available, inventories=inventories, startAt=startAt, endAt=endAt, sellerID=sellerID)
 
-
-
-@app.route('/sellers/me/activities', methods=['GET', 'POST'])
-@jwt_required()
-def sellers_for_activities():
-    name = request.get_json()['name']
-    scope = request.get_json()['scope']
-    type = request.get_json()['type']
-    value = request.get_json()['value']
-    available = request.get_json()['available']
-    startAt= request.get_json()['startAt']
-    endAt = request.data['endAt']
-    scope_choice, type_choice = ("STORE", "PRODUCT"), ("MINUS", "MULTIPLY")
-    
-    if scope not in scope_choice:
-        return jsonify("Scope has to be one of STORE, PRODUCT"),400
-    if type not in type_choice:
-        return jsonify("Type has to be one of MINUS, MULTIPLY"),400
-    
-    if scope == "STORE":
-        productID = 0
-    else:
-        productID = request.get_json()['productId']
-        product = Product.query.filter(productID==Product.productID)
-        if product.count() == 0:
-            return jsonify("Product doesn't exist"),404
-    
-    if request.method == "POST":
-        current_user_id = get_jwt_identity()
-        user_now = User.query.get(current_user_id)
-        con=sqlite3.connect("database1.db")
-        cur=con.cursor()
-        cur.execute("INSERT INTO Activity(name,scope,type,value,available,startAt,endAt,sellerID,productID)values(?,?,?,?,?,?,?,?,?)",(name,scope,type,value,available,startAt,endAt,user_now.id,productID))
-        con.commit()
-        activityID =  Activity.query.filter(name==Activity.name).first()
-        data = {
-            "activityID":activityID.activityID, 
-            "name":activityID.name, 
-            "scope":activityID.scope,
-            "type":activityID.type,
-            "value":activityID.value,
-            "available":activityID.available,
-            "startAt":activityID.startAt,
-            "endAt":activityID.endAt,
-            "productID":activityID.productID,
-            "sellerID":user_now.id
-        }
-        return  jsonify({"status":"201","message":"Create activity Successfully","data": data})      
-
-    # GET
-
-    queryset = Activity.objects.filter(sellerID=id)
-    if queryset.count() == 0:
-        return Response(get_response_body(403, f"No product available"), status=403)
-    data = [a_data['fields'] for a_data in json.loads(serializers.serialize("json", queryset))]
-    return Response(get_response_body(200, f"List all activities of seller {id}", data), status=200)
-
-
-
-
-
-
-"""    
 
 
 @app.route("/sellers/me/products", methods=["GET","POST"])
 @jwt_required()
 def product():
     current_user_id = get_jwt_identity()
-    user = User.query.get(current_user_id)
+    
 
     if request.method == "POST":
-        name, description, picture, colors, sizes, price, available, startAt, endAt = request.get_json()['name'], request.get_json()['description'], request.get_json()['picture'], request.get_json()['colors'], request.get_json()['sizes'], request.get_json()['price'], request.get_json()['available'], request.get_json()['startAt'], request.get_json()['endAt']
+        name, description, picture, colors, sizes, price, available, startAt, endAt = request.get_json()['name'], request.get_json()['description'], request.get_json()['picture'], request.get_json()['colors'], request.get_json()['sizes'], request.get_json()['price'],bool( request.get_json()['available']), request.get_json()['startAt'], request.get_json()['endAt']
+        
+        ##find product 
         queryset = Product.query.filter(name==Product.name)
-        if queryset.count() > 0:
-            return jsonify("Product already exists"), 405
-        startAt1=datetime.strptime(startAt,"%Y-%m-%d").date()
-        endAt1=datetime.strptime(endAt,"%Y-%m-%d").date()
-        new_user = Product(name=name,description=description,colors=colors,sizes=sizes,price=price,picture=picture,available=available,startAt=startAt1,endAt=endAt1,sellerID=user.userID )
-        new_colors=Color(color=colors,name=name)
-        new_sizes=Size(size=sizes,name=name)
-               
-        db.session.add(new_user)
-        db.session.add(new_colors)
-        db.session.add(new_sizes)
-        number_color=Color.query.filter(Color.color==colors,Color.name==name).count()
-        number_size=Size.query.filter(Size.size==sizes,Size.name==name).count()
-        if number_color and number_size:
-            new_user.inventories=(number_color+number_size)/2
-        else:
-            new_user.inventories+1
-        db.session.commit()
+        if queryset.count() == 0:
+            ## build product
+            new_product = Product(name=name,description=description,price=price,picture=picture,available=available,startAt= datetime.datetime.strptime(startAt, "%Y-%m-%d").date(),endAt= datetime.datetime.strptime(endAt, "%Y-%m-%d").date(),sellerID=current_user_id,inventories=0)
+            db.session.add(new_product)
+            db.session.commit()
+        queryset = Product.query.filter(Product.name==name).first()      
+        Colorquery=Color.query.filter(Color.name==colors)
+        ##find if color exist 
+        if Colorquery.count()==0:
+            new_color=Color(name=colors)
+            db.session.add(new_color)
+            if queryset.sizes is None:
+                queryset.colors=colors
+            else:
+                queryset.colors=queryset.colors+','+colors
             
-        return "Create Product seccessfully"
+            db.session.commit()
+        Sizequery=Color.query.filter(Size.name==sizes)
+        ##find if size exist 
+        if Sizequery.count()==0:
+            new_size=Size(name=sizes)
+            db.session.add(new_size)
+            if queryset.sizes is None:
+                queryset.sizes=sizes
+            else:
+                queryset.sizes=queryset.sizes+','+sizes
+            db.session.commit()
+
+        ColorID=Color.query.filter(Color.name==colors).first().colorID
+        SizeID=Size.query.filter(Size.name==sizes).first().sizeID
+        ProductID=Product.query.filter(Product.name==name).first().productID 
+        ##find item  
+        queryitem= Item.query.filter(Item.colorID==ColorID,Item.sizeID==SizeID,Item.productID==ProductID)
+        if queryitem.count()>0:
+            return  jsonify("Product already exists"), 405
+        else :
+            new_item=Item(colorID=ColorID,sizeID=SizeID,productID=ProductID,inventory=1) 
+            db.session.add(new_item)
+            #update product
+            queryset.inventories+=1
+            db.session.add(queryset)
+            db.session.commit()
+
+            
+        return  jsonify({"status":"201","message":"Create Product seccessfully"})
+
     if request.method == "GET":
         current_user_id = get_jwt_identity()
-        user_now = User.query.get(current_user_id)
+        
         c = sqlite3.connect('database1.db').cursor()
-        c.execute("SELECT * FROM Product WHERE sellerID=?", (user_now.userID,))
+        c.execute("SELECT * FROM Product WHERE sellerID=?",(current_user_id,))
         rows = c.fetchall()
         columns = [col[0] for col in c.description]
         data=[dict(zip(columns,row)) for row in rows ]
@@ -401,9 +342,9 @@ def sellerID_products(sellerID):
         return "Seller has no this product"
 
     current_user_id = get_jwt_identity()
-    user_now = User.query.get(current_user_id)
+    
     c = sqlite3.connect('database1.db').cursor()
-    c.execute("SELECT * FROM Product WHERE sellerID=?", (user_now.userID,))
+    c.execute("SELECT * FROM Product WHERE sellerID=?", (current_user_id,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
     data=[dict(zip(columns,row)) for row in rows ]
@@ -422,27 +363,33 @@ def product_productID(productID):
     if request.method == "PATCH":
         product=Product.query.get(productID)
         current_user_id = get_jwt_identity()
-        user_now = User.query.get(current_user_id)
-        if user_now.userID != product.sellerID:
+        
+        if current_user_id != product.sellerID:
             return "This Product isn't yours" 
-           
-        available = request.get_json()['available']
+        name, description, picture, price, available, startAt, endAt = request.get_json()['name'], request.get_json()['description'], request.get_json()['picture'],  request.get_json()['price'],bool( request.get_json()['available']), request.get_json()['startAt'], request.get_json()['endAt']    
+        ##change name description available startAt  endAt link name  price 
+        product.name=name
+        product.description=description
+        product.picture=picture
+        product.price=price
+        product.startAt= datetime.datetime.strptime(startAt, "%Y-%m-%d").date()
+        product.endAt= datetime.datetime.strptime(endAt, "%Y-%m-%d").date()
         product.available=available
         db.session.add(product)       
         db.session.commit()
         data = {
-        "id": product.productID,
-        "name": product.name,
-        "description": product.description,
-        "picture": product.picture,
-        "colors": product.colors,
-        "sizes": product.sizes,
-        "price": product.price,
-        "available": product.available,
-        "inventories": product.inventories,
-        "startAt": product.startAt,
-        "endAt": product.endAt,
-        "sellerId": product.sellerID
+            "id": product.productID,
+            "name": product.name,
+            "description": product.description,
+            "picture": product.picture,
+            "colors": product.colors,
+            "sizes": product.sizes,
+            "price": product.price,
+            "available": product.available,
+            "inventories": product.inventories,
+            "startAt": product.startAt,
+            "endAt": product.endAt,
+            "sellerId": product.sellerID
         }
         return jsonify ({
             "status":"200",
@@ -478,16 +425,29 @@ def patch_inventories(productID):
             return "Product isn't exists",403
         product=Product.query.get(productID)
         current_user_id = get_jwt_identity()
-        user_now = User.query.get(current_user_id)
-        if user_now.userID != product.sellerID:
+        
+        if current_user_id != product.sellerID:
                 return "This Product isn't yours"
-        colorID, sizeID, inventory = request.get_json()['colorId'], request.get_json()['sizeId'], request.get_json()['inventory']
-        color = Color.query.filter(colorID==Color.colorID)
-        size =  Size.query.filter(sizeID==Size.sizeID)
-        if color.count() and size.count() == 0:
+
+        color, size, inventory = request.get_json()['color'], request.get_json()['size'], request.get_json()['inventory']
+        color = Color.query.filter(color==Color.name)
+        size =  Size.query.filter(size==Size.name)
+        if color.count() ==0 and size.count() == 0:
             return "There's no product with colorID and sizeID ", 405
-        product.inventories=inventory
-        db.session.add(product)       
+        colorID = color.first().colorID
+        sizeID =  size.first().sizeID
+
+        item=Item.query.filter(Item.colorID==colorID,Item.sizeID==sizeID)
+        if item.count() ==0:
+             return "There's no product with colorID and sizeID ", 405
+        item= item.first()
+       
+        product.inventories=product.inventories-item.inventory
+        item.inventory=inventory
+        product.inventories=product.inventories+item.inventory
+        
+        db.session.add(product)   
+        db.session.add(item)
         db.session.commit()
     product=Product.query.get(productID)
     message = "The inventory of product has been successfully patched"
@@ -520,9 +480,7 @@ def get_seller_product(SellerId):
     c.execute("SELECT id,name,available,price,startAt,endAt,sellerId FROM product WHERE sellerId=?", (SellerId,))
     rows = c.fetchall()
     columns = [col[0] for col in c.description]
-
     return render_template('product1.html', jwt=jwt,rows=rows, columns=columns)
-
 @app.route("/api/products/<int:ProductId>", methods=["GET","PATCH"])  ## get the product. update the product 
 @login_required
 def get_product(ProductId):
@@ -533,7 +491,6 @@ def get_product(ProductId):
     columns = [col[0] for col in c.description]
     c.execute("SELECT picture FROM product WHERE id=?", (ProductId,))
     link = c.fetchone()
-
     return render_template('product2.html', jwt=jwt,rows=rows, columns=columns,link=link)
     
 @app.route("/products/<int:ProductId>/invertories", methods=["GET","PATCH"]) ## update the products inventories 
@@ -548,7 +505,6 @@ def update_product(ProductId):
            
            return redirect(url_for('update_product',jwt=jwt))
     return render_template('product3.html', jwt=jwt,)
-
 ### activity 
 @app.route("/sellers/me/activities", methods=["GET","POST"]) ## create activity  ## get my activity 
 @login_required
@@ -562,7 +518,6 @@ def get_activity():
 @login_required
 def update_activity():
     return 
-
 ### coupon 
 @app.route("/sellers/me/coupons", methods=["GET","POST"])   ## get and create 
 @login_required
@@ -584,7 +539,6 @@ def get_coupon():
 @login_required
 def my_buyer_coupon():
     return 
-
 ### orders
 @app.route("/buyers/me/orders", methods=["POST","GET"]) 
 @login_required
